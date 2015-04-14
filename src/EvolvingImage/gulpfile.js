@@ -37,7 +37,9 @@ gulp.task("build:index", ["build:libs", "build:app"], function () {
 		{ ignorePath: "/wwwroot/", addRootSlash: false }))
 		.pipe($.inject(gulp.src(target + "/**/*.js", { read: false })
 			.pipe($.order([
-				"**/angular.js", // ensure angular is first script loaded
+				"**/jquery.*",   // load libraries in right order
+				"**/bootstrap.*",
+				"**/angular.*",
 				"dist/**/*",     // then other JS dependencies
 				"**/*"           // then app JS files
 			])),
