@@ -1,0 +1,36 @@
+{
+	"name": "EvolvingImage",
+	"version": "0.1.0",
+	"private": true,
+	"dependencies": {
+		"angular": ">=1.4.0-beta.0 <1.4.0-build",
+		"bootstrap": "3.3.x",
+		"jquery": "2.1.x"
+	},
+	"overrides": {
+		"angular": {
+			"main": {
+				"development": "./angular.js",
+				"production": "./angular.min.js"
+			}
+		},
+		"bootstrap": {
+			"main": {
+				"development": [
+					"dist/css/bootstrap.css",
+					"dist/js/bootstrap.js"
+				],
+				"production": [
+					"dist/css/bootstrap.min.css",
+					"dist/js/bootstrap.min.js"
+				]
+			}
+		},
+		"jquery": {
+			"main": {
+				"development": "dist/jquery.js",
+				"production":  "dist/jquery.min.js"
+			}
+		}
+	}
+}
