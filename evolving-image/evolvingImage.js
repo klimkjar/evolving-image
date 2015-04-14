@@ -442,14 +442,14 @@
 				// Draw the image to the target context
 				function drawImage() {
 					function drawPoly(polygon) {
-						context.fillStyle = polygon.colour;
+						context.fillStyle = polygon.colour.toString();
 						context.beginPath();
 						for (var i = 0; i < polygon.path.length; ++i)
 							context.lineTo(polygon.path[i].x, polygon.path[i].y);
 						context.fill();
 					}
 
-					context.fillStyle = image.background;
+					context.fillStyle = image.background.toString();
 					context.fillRect(0, 0, source.width, source.height);
 					for (var i = 0; i < image.polygons.length; ++i) {
 						drawPoly(image.polygons[i]);
