@@ -12,6 +12,7 @@ angular.module("evolving-image").directive("evolvingImg", [
 
 		function link(scope, element) {
 			var infoElement = document.getElementById(scope.info);
+			var targetElement = document.getElementById(scope.target);
 
 			function updateInfo(data) {
 				infoElement.textContent =
@@ -24,6 +25,8 @@ angular.module("evolving-image").directive("evolvingImg", [
 
 			var targetImage = new SourceImage(scope.target);
 			var evolver = new ImageEvolver(targetImage, updateInfo);
+			element[0].style.width = targetElement.clientWidth + "px";
+			element[0].style.height = targetElement.clientHeight + "px";
 			element[0].appendChild(evolver.progressCanvas);
 			evolver.start();
 		}
