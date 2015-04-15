@@ -23,12 +23,15 @@ angular.module("evolving-image").directive("evolvingImg", [
 					(data.currentMinimumError / 1000).toFixed(0) + "k";
 			}
 
-			var targetImage = new SourceImage(scope.target);
-			var evolver = new ImageEvolver(targetImage, updateInfo);
-			element[0].style.width = targetElement.clientWidth + "px";
-			element[0].style.height = targetElement.clientHeight + "px";
-			element[0].appendChild(evolver.progressCanvas);
-			evolver.start();
+			angular.element(document.getElementById(scope.target))
+				.on("load", function() {
+					var targetImage = new SourceImage(scope.target);
+					var evolver = new ImageEvolver(targetImage, updateInfo);
+					element[0].style.width = targetElement.clientWidth + "px";
+					element[0].style.height = targetElement.clientHeight + "px";
+					element[0].appendChild(evolver.progressCanvas);
+					evolver.start();
+				});
 		}
 
 		return {
