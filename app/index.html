@@ -1,0 +1,64 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+  
+  <head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- inject:css -->
+    <!-- endinject -->
+  </head>
+  
+  <body ng-app="app" ng-strict-di>
+    <div class="container">
+      <h1 class="text-center">Evolving image</h1>
+      <div class="row" style="margin-top: 2.5em; margin-bottom: 2.5em;">
+        <div class="col-md-5 col-md-offset-1">
+          <img class="center-block" src="toucan.png" id="targetImage" />
+        </div>
+        <div class="col-md-5">
+          <evolving-img class="center-block" target="targetImage" info="info" />
+        </div>
+      </div>
+      <div>
+        <h3>What am I watching?</h3>
+        <p>The above is a javascript program I wrote to illustrate the concept of evolution and mutations to my 7-year old son. The
+          image on the right is a random process trying to evolve into the image on the left. It is inspired by
+          <a href="http://rogeralsing.com/2008/12/07/genetic-programming-evolution-of-mona-lisa/">a project by Roger Alsing</a>. When the simulation starts the image will appear to be a rapidly changing blob of random colors, but as the process goes
+          on it will more and more closely resemble the target image. After around 1000 generations the basic colours and shapes should
+          start appearing, and after around 10 000 major features should be recognizable. Smaller details will take longer to appear.
+          Leave the process running for a while, the longer it runs the better the result.</p>
+        <h3>How does it work?</h3>
+        <p>The image is composed from up to 50 semitransparent polygons. You can picture them as pieces of differently colored cellophane
+          paper stacked on top of each other. The simulation will randomly rearrange these pieces, adding or removing them, adjusting
+          colors, or moving corners around. After every step the resulting picture is compared to the original, and assigned a "fitness
+          score" depending on how well it matches. The more the picture resembles the original, the better the score. If the score
+          is better than the best previously created image, it will be kept.</p>
+        <h3>I'm not seeing anything!</h3>
+        <p>This is a quick proof-of-concept, and might not work well in older or mobile browsers. It has been confirmed working in
+          recent versions of Firefox, Chrome, Internet Explorer and Safari, as well as on iPhone/iPad browsers. It is normal for the
+          simulation to stall for a while on occasion, as long as the iterations in the statistics below are updating the process is
+          running. The minimum accepted error threshold gradually increases to prevent the process from getting stuck in a local minimum.
+          If things are going slowly in the early beginning, try refreshing the page for a different starting point which might work
+          better.</p>
+        <h3>Where did you find that toucan?</h3>
+        <p>The toucan image is a resized version of
+          <a href="https://flic.kr/p/4ufp9i">this photo by Flickr user Ana_Cotta</a>. It is licensed under the
+          <a href="https://creativecommons.org/licenses/by/2.0/">Creative Commons Attribution License 2.0</a>.</p>
+        <h3>Can I see the source code?</h3>
+        <p>The source is available under the
+          <a href="LICENSE.txt">MIT license</a>. View source in your browser or
+          <a href="https://github.com/klimkjar/evolving-image">find it on GitHub</a>.</p>
+      </div>
+      <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+          <h4 class="text-center">Statistics:</h4>
+          <pre id="info"></pre>
+        </div>
+      </div>
+    </div>
+    <!-- inject:js -->
+    <!-- endinject -->
+  </body>
+
+</html>

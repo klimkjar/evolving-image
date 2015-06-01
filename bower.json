@@ -1,9 +1,9 @@
 {
 	"name": "EvolvingImage",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"private": true,
 	"dependencies": {
-		"angular": ">=1.4.0-beta.0 <1.4.0-build",
+		"angular": "^1.4.0",
 		"bootstrap": "3.3.x",
 		"jquery": "2.1.x",
 		"perfnow-polyfill": "*"
