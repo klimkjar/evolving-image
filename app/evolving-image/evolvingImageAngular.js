@@ -31,7 +31,7 @@
   // callback - will be called twice a second with statistics about the
   //            evolution process
   mod.factory("ImageEvolver", function () {
-    return imageEvolver.ImageEvolver;
+    return imageEvolver.ImageEvolverUsingSetTimeout;
   });
 
 })();

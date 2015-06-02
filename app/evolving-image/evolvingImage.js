@@ -405,7 +405,7 @@ var imageEvolver = (function () {
     this.width = width;
     this.height = height;
   };
-
+ 
   // ImageEvolver(source, callback)
   //
   // This class is used to evolve a PolygonImage into a close resemblance of
@@ -432,10 +432,6 @@ var imageEvolver = (function () {
       generations = 0,
       lastUpdate = 0,
       timings = new Array(STAT_BUFFER_LENGTH),
-      isRunning = false,
-      evolveInterval,
-      infoInterval,
-      evolutionStarted,
       progressContext;
 
     // Calculate the total square error of the image.
@@ -472,6 +468,29 @@ var imageEvolver = (function () {
       }
     }
 
+    function calculateAverageIterationTimeInMilliseconds() {
+      var total = 0;
+      var samples = Math.min(iterations, STAT_BUFFER_LENGTH);
+      for (var i = 0; i < samples; ++i) {
+        total += timings[i];
+      }
+      return total / samples;
+    }
+
+    this.updateInfo = function () {
+      if (!infoCallback) return;
+      infoCallback({
+        iterations: iterations,
+        generations: generations,
+        averageMillisecondsPerIteration:
+        calculateAverageIterationTimeInMilliseconds(),
+        iterationsPerSecond:
+        1000 * iterations / (performance.now() - this.evolutionStarted),
+        currentMinimumError: minError,
+        realMinimumError: realMinError
+      });
+    }.bind(this);
+
     // Evolution process. Every step mutates the image, draws it to an
     // in-memory canvas and compares the result with the target image. If
     // the error is smaller than the threshold, the result is kept as the
@@ -480,13 +499,8 @@ var imageEvolver = (function () {
     // After every iteration, the acceptance threshold is increased by
     // 1/10 000 of the minimum error achived, to prevent the evolution
     // from getting stuck in a local minimum.
-    function evolve() {
+    this.evolve = function () {
       var startTime = performance.now();
-      if (!isRunning) {
-        clearInterval(evolveInterval);
-        clearInterval(infoInterval);
-        return;
-      }
 
       var previous = new PolygonImage(image);
       image.isDirty = false;
@@ -518,48 +532,42 @@ var imageEvolver = (function () {
       performance.now() - startTime;
     };
 
-    function calculateAverageIterationTimeInMilliseconds() {
-      var total = 0;
-      var samples = Math.min(iterations, STAT_BUFFER_LENGTH);
-      for (var i = 0; i < samples; ++i) {
-        total += timings[i];
-      }
-      return total / samples;
-    }
-
-    function updateInfo() {
-      if (!infoCallback) return;
-      infoCallback({
-        iterations: iterations,
-        generations: generations,
-        averageMillisecondsPerIteration:
-        calculateAverageIterationTimeInMilliseconds(),
-        iterationsPerSecond:
-        1000 * iterations / (performance.now() - evolutionStarted),
-        currentMinimumError: minError,
-        realMinimumError: realMinError
-      });
-    }
-
-    this.start = function () {
-      if (isRunning) return false;
-      isRunning = true;
-      evolutionStarted = performance.now();
-      evolveInterval = setInterval(evolve, 1000 / 250);
-      infoInterval = setInterval(updateInfo, 1000 * 0.5);
-      return true;
-    };
-
-    this.stop = function () {
-      isRunning = false;
-    };
-
     canvas.width = source.width;
     canvas.height = source.height;
     this.progressCanvas = document.createElement("canvas");
     this.progressCanvas.width = source.width;
     this.progressCanvas.height = source.height;
     progressContext = this.progressCanvas.getContext("2d");
+  };
+
+  lib.ImageEvolverUsingSetTimeout = function (source, infoCallback) {
+    var evolver = new lib.ImageEvolver(source, infoCallback);
+    var isRunning = false;
+    var evolveInterval, infoInterval;
+
+    function doEvolve() {
+      if (!isRunning) {
+        clearInterval(evolveInterval);
+        clearInterval(infoInterval);
+        return;
+      }
+      evolver.evolve();
+    }
+
+    this.progressCanvas = evolver.progressCanvas;
+
+    this.start = function () {
+      if (isRunning) return true;
+      isRunning = true;
+      evolver.evolutionStarted = performance.now();
+      evolveInterval = setInterval(doEvolve, 1000 / 250);
+      infoInterval = setInterval(evolver.updateInfo, 1000 / 2);
+      return true;
+    };
+
+    this.stop = function () {
+      isRunning = false;
+    };
   };
 
   return lib;
