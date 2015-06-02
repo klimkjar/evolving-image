@@ -3,7 +3,8 @@
 
 // Angular module for generation of an image through an evolutionary process.
 // The image is composed of a set of semitransparent polygons.
-// Typically used within an evolvingImage directive, see evolvingImageDirective.js for usage example
+// Typically used within an evolvingImage directive, see
+// evolvingImageDirective.js for usage example
 
 (function () {
   "use strict";
@@ -14,7 +15,6 @@
   var RATE = 1000;
 
   // Random helper functions
-
   function getRandomIntInRange(min, maxExclusive) {
     return Math.floor(Math.random() * (maxExclusive - min)) + min;
   }
@@ -47,8 +47,8 @@
   // A mutatable RGBA colour value. 
   //
   // owner - required, specifies the PolygonImage where this colour is used.
-  // source - optional, if specified the created colour will be a clone of the 
-  //			source colour. If left out, a random colour will be created.
+  // source - optional, if specified the created colour will be a clone of
+  //          the source colour. If left out, a random colour will be created.
   mod.factory("Colour", function () {
 
     // Colour array index constants
@@ -87,11 +87,13 @@
             owner.isDirty = true;
           }
           if (willMutate(RATE)) {
-            self.values[index] = fudgeAndClampInt(self.values[index], 20, 0, 255);
+            self.values[index] = fudgeAndClampInt(
+              self.values[index], 20, 0, 255);
             owner.isDirty = true;
           }
           if (willMutate(RATE)) {
-            self.values[index] = fudgeAndClampInt(self.values[index], 3, 0, 255);
+            self.values[index] = fudgeAndClampInt(
+              self.values[index], 3, 0, 255);
             owner.isDirty = true;
           }
         }
@@ -103,11 +105,13 @@
             owner.isDirty = true;
           }
           if (willMutate(RATE)) {
-            self.values[ALPHA] = fudgeAndClamp(self.values[ALPHA], 0.1, 0, 1);
+            self.values[ALPHA] = fudgeAndClamp(
+              self.values[ALPHA], 0.1, 0, 1);
             owner.isDirty = true;
           }
           if (willMutate(RATE)) {
-            self.values[ALPHA] = fudgeAndClamp(self.values[ALPHA], 0.01, 0, 1);
+            self.values[ALPHA] = fudgeAndClamp(
+              self.values[ALPHA], 0.01, 0, 1);
             owner.isDirty = true;
           }
         }
@@ -160,7 +164,7 @@
   //
   // owner - required, specifies the PolygonImage where this point is used.
   // source - optional, if specified the created point will be a clone of the 
-  //			source point. If left out, a random point will be created.
+  //			    source point. If left out, a random point will be created.
   mod.factory("Point", function () {
     function Point(owner, source) {
       var self = this;
@@ -184,19 +188,28 @@
       // The odds of mutation happening is defined in the RATE constant, every
       // step has a 1 in RATE chance of happening.
       //
-      // If any mutations have occured, the owner PolygonImage is marked as dirty.
+      // If any mutations have occured, the owner PolygonImage is marked as
+      // dirty.
       this.mutate = function () {
         if (willMutate(RATE)) {
           randomize();
         }
         if (willMutate(RATE)) {
-          this.x = Math.min(Math.max(0, this.x + getRandomIntInRangeInclusive(-20, 20)), owner.width);
-          this.y = Math.min(Math.max(0, this.y + getRandomIntInRangeInclusive(-20, 20)), owner.height);
+          this.x = Math.min(
+            Math.max(0, this.x + getRandomIntInRangeInclusive(-20, 20)),
+            owner.width);
+          this.y = Math.min(
+            Math.max(0, this.y + getRandomIntInRangeInclusive(-20, 20)),
+            owner.height);
           owner.isDirty = true;
         }
         if (willMutate(RATE)) {
-          this.x = Math.min(Math.max(0, this.x + getRandomIntInRangeInclusive(-3, 3)), owner.width);
-          this.y = Math.min(Math.max(0, this.y + getRandomIntInRangeInclusive(-3, 3)), owner.height);
+          this.x = Math.min(
+            Math.max(0, this.x + getRandomIntInRangeInclusive(-3, 3)),
+            owner.width);
+          this.y = Math.min(
+            Math.max(0, this.y + getRandomIntInRangeInclusive(-3, 3)),
+            owner.height);
           owner.isDirty = true;
         }
       };
@@ -217,8 +230,9 @@
   // A mutatable polygon.
   //
   // owner - required, specifies the PolygonImage where this polygon is used.
-  // source - optional, if specified the created polygon will be a clone of the 
-  //			source polygon. If left out, a random polygon will be created.
+  // source - optional, if specified the created polygon will be a clone of
+  //          the source polygon. If left out, a random polygon will be
+  //          created.
   mod.factory("Polygon", [
     "Colour", "Point",
     function (Colour, Point) {
@@ -248,9 +262,12 @@
 
         // Mutates the polygon. Possible mutations are:
         //   * Colour change (see Colour.mutate for details)
-        //   * Addition of a point, if the polygon has fewer than the maximum points
-        //   * Removal of a point, if the polygon has more than the minimum points
-        //   * Mutation of all points in the polygon (see Point.mutate for details)
+        //   * Addition of a point, if the polygon has fewer than the maximum
+        //     points
+        //   * Removal of a point, if the polygon has more than the minimum
+        //     points
+        //   * Mutation of all points in the polygon (see Point.mutate for
+        //     details)
         this.mutate = function () {
           this.colour.mutate();
           if (willMutate(RATE) && this.path.length > MINPOINTS) {
@@ -288,10 +305,10 @@
   //
   // A mutatable polygon image.
   //
-  // source - optional - if specified the created image will be a clone of the 
-  //			source image. If left out, a random image will be created. When
-  //          this parameter is left out, the width and height parameters are
-  //			required.
+  // source - optional - if specified the created image will be a clone of
+  //          the source image. If left out, a random image will be created.
+  //          When this parameter is left out, the width and height
+  //          parameters are required.
   // width - width of the image. Required when creating a new image.
   // height - height of the image. Required when creating a new image.
   mod.factory("PolygonImage", [
@@ -328,7 +345,8 @@
         } else {
           this.background = new Colour(this);
           this.background.setOpaque();
-          polygonCount = getRandomIntInRangeInclusive(MINPOLYGONS, MAXPOLYGONS);
+          polygonCount = getRandomIntInRangeInclusive(
+            MINPOLYGONS, MAXPOLYGONS);
           polygons = new Array(polygonCount);
           for (i = 0; i < polygonCount; ++i) {
             polygons[i] = new Polygon(this);
@@ -340,9 +358,12 @@
 
       // Mutates the polygon image. Possible mutations are:
       //   * Background colour change (see Colour.mutate for details)
-      //   * Addition of a polygon, if the image has fewer than the maximum polygons
-      //   * Removal of a polygon, if the polygon has more than the minimum polygons
-      //   * Mutation of all polygons in the image (see Polygon.mutate for details)
+      //   * Addition of a polygon, if the image has fewer than the maximum
+      //     polygons
+      //   * Removal of a polygon, if the polygon has more than the minimum
+      //     polygons
+      //   * Mutation of all polygons in the image (see Polygon.mutate for
+      //     details)
       PolygonImage.prototype.mutate = function () {
         this.background.mutate();
         if (willMutate(RATE) && this.polygons.length > MINPOLYGONS) {
@@ -367,8 +388,8 @@
 
   // SourceImage(id)
   //
-  // A source image used for getting pixel values to compare the evolved images
-  // with.
+  // A source image used for getting pixel values to compare the evolved
+  // images with.
   //
   // id - the id of the <img> on the page.
   mod.factory("SourceImage", function () {
@@ -393,12 +414,13 @@
 
   // ImageEvolver(source, callback)
   //
-  // This class is used to evolve a PolygonImage into a close resemblance of a SourceImage.
-  // After creating an instance of the class, call start() to begin or resume evolution and 
-  // stop() to pause it.
+  // This class is used to evolve a PolygonImage into a close resemblance of
+  // a SourceImage. After creating an instance of the class, call start() to
+  // begin or resume evolution and stop() to pause it.
   //
   // source - the SourceImage that is the goal of the evolution process
-  // callback - will be called twice a second with statistics about the evolution process
+  // callback - will be called twice a second with statistics about the
+  //            evolution process
   mod.factory("ImageEvolver", [
     "PolygonImage",
     function (PolygonImage) {
@@ -425,7 +447,8 @@
 
         // Calculate the total square error of the image.
         function calculateError() {
-          var data = context.getImageData(0, 0, canvas.width, canvas.height).data;
+          var data = context.getImageData(
+            0, 0, canvas.width, canvas.height).data;
           var targetData = source.data;
           var error = 0;
           var i = 0;
@@ -456,14 +479,14 @@
           }
         }
 
-        // Evolution process. Every step mutates the image, draws it to an in-memory
-        // canvas and compares the result with the target image. If the error is smaller
-        // than the threshold, the result is kept as the current best result, otherwise
-        // it is discarded.
+        // Evolution process. Every step mutates the image, draws it to an
+        // in-memory canvas and compares the result with the target image. If
+        // the error is smaller than the threshold, the result is kept as the
+        // current best result, otherwise it is discarded.
         //
-        // After every iteration, the acceptance threshold is increased by 1/10 000 of the
-        // minimum error achived, to prevent the evolution from getting stuck in a local
-        // minimum.
+        // After every iteration, the acceptance threshold is increased by
+        // 1/10 000 of the minimum error achived, to prevent the evolution
+        // from getting stuck in a local minimum.
         function evolve() {
           var startTime = performance.now();
           if (!isRunning) {
@@ -486,9 +509,12 @@
             if (error < realMinError) realMinError = error;
             ++generations;
             if (performance.now() - lastUpdate > PROGRESS_REFRESH_RATE) {
-              // If a better image has been generated and the progress image has been displayed long enough,
-              // push the new image to the progress context
-              progressContext.putImageData(context.getImageData(0, 0, canvas.width, canvas.height), 0, 0);
+              // If a better image has been generated and the progress image
+              // has been displayed long enough, push the new image to the
+              // progress context
+              progressContext.putImageData(
+                context.getImageData(0, 0, canvas.width, canvas.height),
+                0, 0);
               lastUpdate = performance.now();
             }
           } else image = previous;
@@ -513,8 +539,10 @@
           infoCallback({
             iterations: iterations,
             generations: generations,
-            averageMillisecondsPerIteration: calculateAverageIterationTimeInMilliseconds(),
-            iterationsPerSecond: 1000 * iterations / (performance.now() - evolutionStarted),
+            averageMillisecondsPerIteration:
+              calculateAverageIterationTimeInMilliseconds(),
+            iterationsPerSecond:
+              1000 * iterations / (performance.now() - evolutionStarted),
             currentMinimumError: minError,
             realMinimumError: realMinError
           });
