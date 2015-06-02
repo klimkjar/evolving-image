@@ -33,8 +33,8 @@ angular.module("evolving-image").directive("evolvingImg", [
         evolver.start();
       });
       
-      // Cover the case where the target image has already been loaded before
-      // the script ran
+      // Cover the case where the target image is fully loaded before
+      // the script runs
       if (targetElement.complete && targetElement.naturalWidth !== 0) {
         angular.element(targetElement).trigger("load");
       }
