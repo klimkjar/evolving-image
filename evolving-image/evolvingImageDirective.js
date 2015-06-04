@@ -18,7 +18,9 @@ angular.module("evolving-image").directive("evolvingImg", [
         infoElement.textContent =
         "Iterations: " + data.iterations + "\n" +
         "Generation: " + data.generations + "\n" +
-        "Iterations per second: " + data.iterationsPerSecond.toFixed(0) + "\n" +
+        "ms/iteration: " + data.averageMillisecondsPerIteration + "\n" +
+        "ms/draw: " + data.averageMillisecondsPerDraw + "\n" +
+        "FPS: " + data.iterationsPerSecond.toFixed(0) + "\n" +
         "Minimum/threshold error: " + (data.realMinimumError / 1000).toFixed(0) + "k/" +
         (data.currentMinimumError / 1000).toFixed(0) + "k";
       }
@@ -33,8 +35,8 @@ angular.module("evolving-image").directive("evolvingImg", [
         evolver.start();
       });
       
-      // Cover the case where the target image has already been loaded before
-      // the script ran
+      // Cover the case where the target image is fully loaded before
+      // the script runs
       if (targetElement.complete && targetElement.naturalWidth !== 0) {
         angular.element(targetElement).trigger("load");
       }
