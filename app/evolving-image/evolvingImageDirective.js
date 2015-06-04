@@ -18,7 +18,9 @@ angular.module("evolving-image").directive("evolvingImg", [
         infoElement.textContent =
         "Iterations: " + data.iterations + "\n" +
         "Generation: " + data.generations + "\n" +
-        "Iterations per second: " + data.iterationsPerSecond.toFixed(0) + "\n" +
+        "ms/iteration: " + data.averageMillisecondsPerIteration + "\n" +
+        "ms/draw: " + data.averageMillisecondsPerDraw + "\n" +
+        "FPS: " + data.iterationsPerSecond.toFixed(0) + "\n" +
         "Minimum/threshold error: " + (data.realMinimumError / 1000).toFixed(0) + "k/" +
         (data.currentMinimumError / 1000).toFixed(0) + "k";
       }

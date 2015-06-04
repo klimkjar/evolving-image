@@ -40,7 +40,8 @@ gulp.task("build:index", ["build:libs", "build:app"], function () {
   return gulp.src("app/index.html")
     .pipe($.inject(gulp.src(target + "/**/*.css", { read: false }),
     { ignorePath: "/wwwroot/", addRootSlash: false }))
-    .pipe($.inject(gulp.src(target + "/**/*.js", { read: false })
+    .pipe($.inject(gulp.src([target + "/**/*.js",
+       "!/**/evolvingImageWorker.js"], { read: false })
     .pipe($.order([
 				"**/jquery.*",   // load primary dependencies
 				"**/bootstrap.*",

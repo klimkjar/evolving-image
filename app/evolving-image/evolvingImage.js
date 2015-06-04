@@ -423,21 +423,22 @@ var imageEvolver = (function () {
     // TODO: Make refresh rate of progress canvas user-configurable
     var PROGRESS_REFRESH_RATE = 1000 / 25;
 
-    var canvas = document.createElement("canvas"),
-      context = canvas.getContext("2d"),
-      image = new PolygonImage(source.width, source.height),
-      minError = Math.pow(2, 32),
-      realMinError = Math.pow(2, 32),
-      iterations = 0,
-      generations = 0,
-      lastUpdate = 0,
-      timings = new Array(STAT_BUFFER_LENGTH),
-      progressContext;
+    var canvas = document.createElement("canvas");
+    canvas.width = source.width;
+    canvas.height = source.height;
+    var webgl = new gfxlib.WebGL(canvas);
+    var image = new PolygonImage(source.width, source.height);
+    var minError = Math.pow(2, 32);
+    var realMinError = Math.pow(2, 32);
+    var iterations = 0;
+    var generations = 0;
+    var lastUpdate = 0;
+    var timings = new Array(STAT_BUFFER_LENGTH);
+    var drawTimings = new Array(STAT_BUFFER_LENGTH);
+    var progressContext;
 
     // Calculate the total square error of the image.
-    function calculateError() {
-      var data = context.getImageData(
-        0, 0, canvas.width, canvas.height).data;
+    function calculateError(data) {
       var targetData = source.data;
       var error = 0;
       var i = 0;
@@ -454,15 +455,19 @@ var imageEvolver = (function () {
     // Draw the image to the target context
     function drawImage() {
       function drawPoly(polygon) {
-        context.fillStyle = polygon.colour.toString();
-        context.beginPath();
-        for (var i = 0; i < polygon.path.length; ++i)
-          context.lineTo(polygon.path[i].x, polygon.path[i].y);
-        context.fill();
+        var c = polygon.colour.values;
+        var path = polygon.path;
+        var poly = new Array(2 * path.length);
+        var idx = 0;
+        for (var i = 0; i < path.length; ++i) {
+          poly[idx++] = path[i].x;
+          poly[idx++] = path[i].y;
+        }
+        webgl.drawTriangleStrip(poly, c);
       }
 
-      context.fillStyle = image.background.toString();
-      context.fillRect(0, 0, source.width, source.height);
+      webgl.clearColor(image.background.values);
+      webgl.clear();
       for (var i = 0; i < image.polygons.length; ++i) {
         drawPoly(image.polygons[i]);
       }
@@ -477,15 +482,25 @@ var imageEvolver = (function () {
       return total / samples;
     }
 
+    function calculateAverageDrawTimeInMilliseconds() {
+      var total = 0;
+      var samples = Math.min(iterations, STAT_BUFFER_LENGTH);
+      for (var i = 0; i < samples; ++i) {
+        total += drawTimings[i];
+      }
+      return total / samples;
+    }
+
     this.updateInfo = function () {
       if (!infoCallback) return;
+      var itMs = calculateAverageIterationTimeInMilliseconds();
+      var dtMs = calculateAverageDrawTimeInMilliseconds();
       infoCallback({
         iterations: iterations,
         generations: generations,
-        averageMillisecondsPerIteration:
-        calculateAverageIterationTimeInMilliseconds(),
-        iterationsPerSecond:
-        1000 * iterations / (performance.now() - this.evolutionStarted),
+        averageMillisecondsPerIteration: itMs,
+        averageMillisecondsPerDraw: dtMs,
+        iterationsPerSecond: 1000 / itMs,
         currentMinimumError: minError,
         realMinimumError: realMinError
       });
@@ -508,9 +523,12 @@ var imageEvolver = (function () {
         image.mutate();
       } while (!image.isDirty);
 
+      var drawStartTime = performance.now();
       drawImage();
+      var drawTime = performance.now() - drawStartTime;
 
-      var error = calculateError();
+      var data = webgl.readPixels();
+      var error = calculateError(data);
       if (error < minError) {
         minError = error;
         if (error < realMinError) realMinError = error;
@@ -519,21 +537,22 @@ var imageEvolver = (function () {
           // If a better image has been generated and the progress image
           // has been displayed long enough, push the new image to the
           // progress context
-          progressContext.putImageData(
-            context.getImageData(0, 0, canvas.width, canvas.height),
-            0, 0);
+          var imageData = progressContext.createImageData(
+            canvas.width, canvas.height);
+          imageData.data.set(data);
+          progressContext.putImageData(imageData, 0, 0);
           lastUpdate = performance.now();
         }
       } else image = previous;
       // penalize solutions that take too long to improve
       minError += realMinError * 0.0001;
 
-      timings[iterations++ % STAT_BUFFER_LENGTH] =
+      timings[iterations % STAT_BUFFER_LENGTH] =
       performance.now() - startTime;
+      drawTimings[iterations++ % STAT_BUFFER_LENGTH] =
+      drawTime;
     };
 
-    canvas.width = source.width;
-    canvas.height = source.height;
     this.progressCanvas = document.createElement("canvas");
     this.progressCanvas.width = source.width;
     this.progressCanvas.height = source.height;
