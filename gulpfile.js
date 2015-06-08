@@ -41,7 +41,7 @@ gulp.task("build:index", ["build:libs", "build:app"], function () {
     .pipe($.inject(gulp.src(target + "/**/*.css", { read: false }),
     { ignorePath: "/wwwroot/", addRootSlash: false }))
     .pipe($.inject(gulp.src([target + "/**/*.js",
-       "!/**/evolvingImageWorker.js"], { read: false })
+    "!/**/evolvingImageWorker.js"], { read: false })
     .pipe($.order([
 				"**/jquery.*",   // load primary dependencies
 				"**/bootstrap.*",
@@ -70,6 +70,12 @@ gulp.task("watch", function () {
 
 gulp.task("release", function (cb) {
   $.runSequence("set-production", "clean", "build:index", cb);
+});
+
+gulp.task("test", function (cb) {
+  var qunit = require("node-qunit-phantomjs");
+  qunit("test/tests.html");
+  cb();
 });
 
 gulp.task("debug", ["connect", "watch"]);

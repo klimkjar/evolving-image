@@ -16,6 +16,12 @@
         "$tsc",
         "$jshint"
       ]
+    },
+    {
+      "taskName": "test",
+      "args": [],
+      "isTestCommand": true,
+      "isWatching": false
     }
   ]
 }

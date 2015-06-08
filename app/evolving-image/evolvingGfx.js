@@ -125,7 +125,7 @@ var gfxlib = (function () {
       gl.clear(gl.COLOR_BUFFER_BIT);
     };
 
-    WebGL.prototype.clearColor = function (c) {
+    WebGL.prototype.clearColour = function (c) {
       this._gl.clearColor(c[0] / 255, c[1] / 255, c[2] / 255, c[3]);
     }
 
@@ -137,12 +137,13 @@ var gfxlib = (function () {
     };
 
     WebGL.prototype.readPixels = function () {
-      var gl = this._gl;
       var width = this._canvas.width;
       var height = this._canvas.height;
-      var data = new Uint8Array(4 * width * height);
-      gl.readPixels(0, 0, width, height, gl.RGBA, gl.UNSIGNED_BYTE, data);
-      return data;
+      if (!this._data) this._data = new Uint8Array(4 * width * height);
+      var gl = this._gl;
+      gl.readPixels(0, 0, width, height,
+        gl.RGBA, gl.UNSIGNED_BYTE, this._data);
+      return this._data;
     }
 
     return WebGL;
