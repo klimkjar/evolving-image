@@ -1,3 +1,4 @@
+/// <reference path="../../typings/angularjs/angular.d.ts"/>
 // (C) 2015 Kjetil Limkjær
 // MIT licensed, see LICENSE.txt for details
 
@@ -7,7 +8,7 @@
 // <evolving-img target="imageToMatch" info="statistics" />
 
 angular.module("evolving-image").directive("evolvingImg", [
-  "ImageEvolver", "SourceImage", function (ImageEvolver, SourceImage) {
+  "ImageEvolver", function (ImageEvolver) {
     "use strict";
 
     function link(scope, element) {
@@ -18,19 +19,24 @@ angular.module("evolving-image").directive("evolvingImg", [
         infoElement.textContent =
         "Iterations: " + data.iterations + "\n" +
         "Generation: " + data.generations + "\n" +
-        "ms/iteration: " + data.averageMillisecondsPerIteration + "\n" +
-        "ms/draw: " + data.averageMillisecondsPerDraw + "\n" +
         "FPS: " + data.iterationsPerSecond.toFixed(0) + "\n" +
-        "Minimum/threshold error: " + (data.realMinimumError / 1000).toFixed(0) + "k/" +
-        (data.currentMinimumError / 1000).toFixed(0) + "k";
+        "Square difference: " + data.error + "\n" +
+        "Min. square difference: " + data.minError;
       }
 
       angular.element(targetElement)
         .on("load", function () {
-        var targetImage = new SourceImage(scope.target);
-        var evolver = new ImageEvolver(targetImage, updateInfo);
-        element[0].style.width = targetElement.clientWidth + "px";
-        element[0].style.height = targetElement.clientHeight + "px";
+        var targetImage = document.getElementById(scope.target);
+        var w = targetImage.width; var h = targetImage.height;
+        var canvas = document.createElement("canvas");
+        var ctx = canvas.getContext("2d");
+        canvas.width = w; canvas.height = h;
+        ctx.drawImage(targetImage, 0, 0);
+        var targetImageData = ctx.getImageData(0, 0, w, h);
+        element[0].style.width = w + "px";
+        element[0].style.height = h + "px";
+
+        var evolver = new ImageEvolver(targetImageData, updateInfo);
         element[0].appendChild(evolver.progressCanvas);
         evolver.start();
       });

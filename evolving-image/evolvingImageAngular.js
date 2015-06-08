@@ -11,16 +11,6 @@
 
   var mod = angular.module("evolving-image", []);
 
-  // SourceImage(id)
-  //
-  // A source image used for getting pixel values to compare the evolved
-  // images with.
-  //
-  // id - the id of the <img> on the page.
-  mod.factory("SourceImage", function () {
-    return imageEvolver.SourceImage;
-  });
-
   // ImageEvolver(source, callback)
   //
   // This class is used to evolve a PolygonImage into a close resemblance of
@@ -31,7 +21,7 @@
   // callback - will be called twice a second with statistics about the
   //            evolution process
   mod.factory("ImageEvolver", function () {
-    return imageEvolver.ImageEvolverUsingSetTimeout;
+    return evolver.evolve.ImageEvolverUsingWebWorker;
   });
 
 })();
