@@ -4,8 +4,6 @@ importScripts("generate.js");
 importScripts("mutate.js");
 importScripts("evolvingImage.js");
 
-var minError;
-var realMinError;
 var target;
 var image;
 var candidate;
@@ -17,33 +15,20 @@ onmessage = function (e) {
 
   switch (message) {
     case "init":
-      realMinError = minError = payload.minError;
-      target = payload.target;
-      image = candidate = payload.image;
-      postMessage({ message: "render", payload: candidate });
+      target = payload;
       break;
-    case "rendered":
-      var data = payload;
-      var error = evolver.evolve.calculateError(target, data);
-      if (error < minError) {
-        if (error < realMinError) realMinError = error;
-        image = candidate;
-        minError = error;
-        postMessage({
-          message: "newbest",
-          payload: {
-            error: error,
-            data: data
-          }
-        });
-      } else minError += realMinError * 0.0001;
-      candidate = evolver.generate.image(image);
-      var mutated = false;
+    case "imageRequest":
+      candidate = evolver.generate.image(payload);
+      var mutated;
       do {
         mutated = evolver.mutate.image(candidate);
       } while (!mutated);
-
-      postMessage({ message: "render", payload: candidate });
+      postMessage({ message: "renderRequest", payload: candidate });
+      break;
+    case "renderResult":
+      var data = payload;
+      var error = evolver.evolve.calculateError(target, data);
+      postMessage({ message: "errorResult", payload: error });
       break;
   }
 };

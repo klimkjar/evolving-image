@@ -56,7 +56,7 @@ evolver.evolve = (function () {
     }
 
     // Draw the image to the target context
-    this.drawImage = function(image) {
+    this.drawImage = function (image) {
       var start = performance.now();
       webgl.clearColour(image.background.value);
       webgl.clear();
@@ -66,19 +66,19 @@ evolver.evolve = (function () {
       var data = webgl.readPixels();
       if (this.drawn % evolver.config.keepEvery == 0)
         timings.push({
-          started: start, 
+          started: start,
           drawn: this.drawn
         });
       ++this.drawn;
       return data;
     };
 
-    this.calculateFps = function() {
+    this.calculateFps = function () {
       var first = timings.first();
       var last = timings.last();
-      return first === last ? 
+      return first === last ?
         0 :
-        1000/ ((last.started - first.started) / (last.drawn - first.drawn));
+        1000 / ((last.started - first.started) / (last.drawn - first.drawn));
     };
 
     this.drawn = 0;
@@ -92,60 +92,83 @@ evolver.evolve = (function () {
     var w = target.width; var h = target.height;
     var ie = new lib.ImageEvolver(target, infoCallback);
     var lastUpdate = 0;
+    var refreshRate = evolver.config.progressRefreshRate;
+
     this.progressCanvas = ie.progressCanvas;
     this.rendered = 0;
     this.improved = 0;
     this.error = 0;
-    this.minError = Math.pow(2, 64);
-    
-    var updateInfo = function() {
+    this.minError = this.realMinError = Math.pow(2, 64);
+    this.image = evolver.generate.image(w, h);
+
+    var updateInfo = function () {
       infoCallback({
         iterations: this.rendered,
         generations: this.improved,
         iterationsPerSecond: ie.calculateFps(),
         error: this.error,
-        minError: this.minError
+        minError: this.realMinError
       });
     }.bind(this);
     setInterval(updateInfo, evolver.config.updateRefreshRate);
-    
-    var worker = new Worker("evolving-image/evolvingImageWorker.js");
-    worker.onmessage = function (e) {
-      var refreshRate = evolver.config.progressRefreshRate;
-      var message = e.data.message;
-      var payload = e.data.payload;
-      if (!message) return;
 
-      switch (message) {
-        case "render":
-          var image = payload;
-          var data = ie.drawImage(image);
-          ++this.rendered;
-          worker.postMessage({message: "rendered", payload: data});
-          break;
-        case "newbest":
-          ++this.improved;
-          this.error = payload.error;
-          if (this.error < this.minError) this.minError = this.error;
-          if (performance.now() - lastUpdate > refreshRate) {
-            var imageData = ie.progressContext.createImageData(w, h);
-            imageData.data.set(payload.data);
-            ie.progressContext.putImageData(imageData, 0, 0);
-            lastUpdate = performance.now();
-          }
-          break;
-      }
+    var createMessageHandler = function (worker) {
+      var candidate; var data;
+      return function (e) {
+        var message = e.data.message;
+        var payload = e.data.payload;
+        switch (message) {
+          case "renderRequest":
+            candidate = payload;
+            data = ie.drawImage(candidate);
+            ++this.rendered;
+            worker.postMessage(
+              { message: "renderResult", payload: data });
+            break;
+          case "errorResult":
+            var error = payload;
+            if (error < this.minError) {
+              if (error < this.realMinError) this.realMinError = error;
+              this.image = candidate;
+              this.error = this.minError = error;
+              if (performance.now() - lastUpdate > refreshRate) {
+                var imageData = ie.progressContext.createImageData(w, h);
+                imageData.data.set(data);
+                ie.progressContext.putImageData(imageData, 0, 0);
+                lastUpdate = performance.now();
+              }
+              ++this.improved;
+            } else this.minError += this.realMinError * 0.0001;
+            worker.postMessage({
+              message: "imageRequest",
+              payload: this.image
+            });
+            break;
+        }
+      }.bind(this);
     }.bind(this);
-    
-    this.start = function() {
-    worker.postMessage({
-      message: "init", payload: {
-      minError: this.minError,
-      target: target,
-      image: evolver.generate.image(target.width, target.height)
-    }});
+
+    var workers = [];
+    for (var i = 0; i < evolver.config.workers; ++i) {
+      var worker = new Worker("evolving-image/evolvingImageWorker.js");
+      worker.onmessage = createMessageHandler(worker);
+      workers.push(worker);
+    }
+
+    this.start = function () {
+      for (var i = 0; i < workers.length; ++i) {
+        var worker = workers[i];
+        worker.postMessage({
+          message: "init",
+          payload: target
+        });
+        worker.postMessage({
+          message: "imageRequest",
+          payload: this.image
+        });
+      }
     };
   };
-  
+
   return lib;
 })();

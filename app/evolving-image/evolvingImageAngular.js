@@ -1,4 +1,6 @@
-﻿// (C) 2015 Kjetil Limkjær
+﻿/// <reference path="../../typings/angularjs/angular.d.ts"/>
+
+// (C) 2015 Kjetil Limkjær
 // MIT licensed, see LICENSE.txt for details
 
 // Angular module for generation of an image through an evolutionary process.

@@ -139,11 +139,11 @@ var gfxlib = (function () {
     WebGL.prototype.readPixels = function () {
       var width = this._canvas.width;
       var height = this._canvas.height;
-      if (!this._data) this._data = new Uint8Array(4 * width * height);
+      var data = new Uint8Array(4 * width * height);
       var gl = this._gl;
       gl.readPixels(0, 0, width, height,
-        gl.RGBA, gl.UNSIGNED_BYTE, this._data);
-      return this._data;
+        gl.RGBA, gl.UNSIGNED_BYTE, data);
+      return data;
     }
 
     return WebGL;
