@@ -3,17 +3,14 @@
 
 // Module for generation of an image through an evolutionary process.
 // The image is composed of a set of semitransparent polygons.
-// Adds an imageEvolver object to the main namespace.
+// Adds an evolver object to the main namespace.
 
-var evolver = self.evolver || {};
-
+self.evolver = self.evolver || {};
 evolver.evolve = (function () {
   "use strict";
 
-  var lib = {};
-
   // Calculate the total square error of the image.
-  lib.calculateError = function (target, candidate) {
+  function calculateError(target, candidate) {
     target = target.data;
     var error = 0;
     var i = 0;
@@ -36,11 +33,11 @@ evolver.evolve = (function () {
   // source - the SourceImage that is the goal of the evolution process
   // callback - will be called twice a second with statistics about the
   //            evolution process
-  lib.ImageEvolver = function (target, infoCallback) {
+  function ImageEvolver(target) {
     var canvas = document.createElement("canvas");
     canvas.width = target.width;
     canvas.height = target.height;
-    var webgl = new gfxlib.WebGL(canvas);
+    var webgl = new evolver.gfx.WebGL(canvas);
     var bufSize = evolver.config.statBufferLength;
     var timings = new evolver.buffer.Circular(bufSize);
 
@@ -58,8 +55,7 @@ evolver.evolve = (function () {
     // Draw the image to the target context
     this.drawImage = function (image) {
       var start = performance.now();
-      webgl.clearColour(image.background.value);
-      webgl.clear();
+      webgl.clear(image.background.value);
       for (var i = 0; i < image.components.length; ++i) {
         drawPoly(image.components[i]);
       }
@@ -67,6 +63,7 @@ evolver.evolve = (function () {
       if (this.drawn % evolver.config.keepEvery == 0)
         timings.push({
           started: start,
+          time: performance.now() - start,
           drawn: this.drawn
         });
       ++this.drawn;
@@ -77,7 +74,7 @@ evolver.evolve = (function () {
       var first = timings.first();
       var last = timings.last();
       return first === last ?
-        0 :
+        1000 / first.time :
         1000 / ((last.started - first.started) / (last.drawn - first.drawn));
     };
 
@@ -88,9 +85,9 @@ evolver.evolve = (function () {
     this.progressContext = this.progressCanvas.getContext("2d");
   };
 
-  lib.ImageEvolverUsingWebWorker = function (target, infoCallback) {
+  var ImageEvolverUsingWebWorker = function (target, infoCallback) {
     var w = target.width; var h = target.height;
-    var ie = new lib.ImageEvolver(target, infoCallback);
+    var ie = new ImageEvolver(target);
     var lastUpdate = 0;
     var refreshRate = evolver.config.progressRefreshRate;
 
@@ -170,5 +167,9 @@ evolver.evolve = (function () {
     };
   };
 
-  return lib;
+  return {
+    calculateError: calculateError,
+    ImageEvolver: ImageEvolver,
+    ImageEvolverUsingWebWorker: ImageEvolverUsingWebWorker
+  };
 })();

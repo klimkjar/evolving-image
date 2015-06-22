@@ -1,4 +1,5 @@
-var gfxlib = (function () {
+self.evolver = self.evolver || {};
+evolver.gfx = (function () {
   "use strict";
 
   var TwoD = (function () {
@@ -120,14 +121,12 @@ var gfxlib = (function () {
       init.call(this);
     }
 
-    WebGL.prototype.clear = function () {
+    WebGL.prototype.clear = function (c) {
       var gl = this._gl;
+      if (c != null)
+        gl.clearColor(c[0] / 255, c[1] / 255, c[2] / 255, c[3]);
       gl.clear(gl.COLOR_BUFFER_BIT);
     };
-
-    WebGL.prototype.clearColour = function (c) {
-      this._gl.clearColor(c[0] / 255, c[1] / 255, c[2] / 255, c[3]);
-    }
 
     WebGL.prototype.drawTriangleStrip = function (poly, color) {
       var gl = this._gl;
